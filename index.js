@@ -61,7 +61,12 @@ async function run() {
       res.send(result);
     });
 
-  
+    app.delete("/automotive/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await automotiveCollection.deleteOne(query);
+      res.send(result);
+    });
 
     app.put("/automotive/:id", async (req, res) => {
       const id = req.params.id;
@@ -74,7 +79,6 @@ async function run() {
           name: updateAutomotive.name,
           Price: updateAutomotive.Price,
           rating: updateAutomotive.rating,
-          taste: updateAutomotive.taste,
           description: updateAutomotive.description,
           brand_name: updateAutomotive.brand_name,
           image: updateAutomotive.image,
