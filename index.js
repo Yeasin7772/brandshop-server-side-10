@@ -9,7 +9,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-//console.log(process.env.DB_PASS);
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.o2tazeo.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -25,13 +25,50 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     // create database in data
 
     const automotiveCollection = client
       .db("automotiveDB")
       .collection("automotive");
+    const saveCarCollection = client.db("carDB").collection("car");
+
+    // add cart
+
+    app.post("/addToCard", async (req, res) => {
+      const addToCard = req.body;
+      console.log(addToCard);
+
+      const result = await saveCarCollection.insertOne(addToCard);
+      console.log(result);
+      res.send(result);
+    });
+
+    app.get("/getCart/:userEmail", async (req, res) => {
+      try {
+        const id = req.params.userEmail;
+        console.log(id);
+        const result = await saveCarCollection
+          .find({ userEmail: id })
+          .toArray();
+        res.send(result);
+      } catch (error) {
+        console.error("error:", error);
+        res.status(500).send(" Server Error");
+      }
+    });
+
+    app.delete("/getCart/:id", async (req, res) => {
+      const id = req.params.id;
+
+      const query = { _id: new ObjectId(id) };
+      const result = await saveCarCollection.deleteOne(query);
+      console.log(result);
+      res.send(result);
+    });
+
+    // automotive data
 
     app.post("/automotive", async (req, res) => {
       const automotive = req.body;
@@ -85,7 +122,11 @@ async function run() {
         },
       };
 
-      const result = await automotiveCollection.updateOne(filter, automotive, options);
+      const result = await automotiveCollection.updateOne(
+        filter,
+        automotive,
+        options
+      );
       res.send(result);
     });
 
